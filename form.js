@@ -24,7 +24,7 @@ function renderPreview() {
 
         const caption = document.createElement('textarea');
         caption.classList.add('caption-input');
-        caption.placeholder = 'Write your memory caption (emojis supported! 💕✨)...';
+        caption.placeholder = 'Write a romantic note... ❤️';
         caption.value = captionsList[index];
         caption.addEventListener('input', (e) => {
             captionsList[index] = e.target.value;
@@ -38,20 +38,20 @@ function renderPreview() {
 
 previewBtn.addEventListener('click', () => {
     if (!photosList.length) {
-        alert("Please upload at least one photo to preview.");
+        alert("Upload some memories first! 💕");
         return;
     }
     renderPreview();
     previewContainer.scrollIntoView({ behavior: 'smooth' });
 });
 
-// Helper: Render text/emojis to a Canvas to maintain quality in PDF
-async function renderTextWithEmojis(text, fontSize, maxWidth) {
+// --- HELPER: HIGH QUALITY TEXT & EMOJIS ---
+async function renderTextWithEmojis(text, fontSize, maxWidth, color = '#3c3c3c') {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    const scale = 2; // High resolution
+    const scale = 3; // Ultra-high resolution
     
-    ctx.font = `${fontSize * scale}px Arial, "Segoe UI Emoji", sans-serif`;
+    ctx.font = `${fontSize * scale}px "Poppins", Arial, "Segoe UI Emoji", sans-serif`;
     
     const words = text.split(' ');
     const lines = [];
@@ -68,24 +68,24 @@ async function renderTextWithEmojis(text, fontSize, maxWidth) {
     }
     if (currentLine) lines.push(currentLine);
     
-    const lineHeight = fontSize * 1.5;
+    const lineHeight = fontSize * 1.6;
     canvas.width = (maxWidth + 40) * scale;
     canvas.height = (lines.length * lineHeight + 20) * scale;
     
     ctx.scale(scale, scale);
-    ctx.font = `${fontSize}px Arial, "Segoe UI Emoji", sans-serif`;
-    ctx.fillStyle = '#3c3c3c';
+    ctx.font = `${fontSize}px "Poppins", Arial, "Segoe UI Emoji", sans-serif`;
+    ctx.fillStyle = color;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
     
     lines.forEach((line, index) => {
-        ctx.fillText(line, canvas.width / (2 * scale), index * lineHeight + 10);
+        ctx.fillText(line, (maxWidth + 40) / 2, index * lineHeight + 10);
     });
     
     return canvas.toDataURL('image/png');
 }
 
-// Helper: Get image dimensions asynchronously
+// --- HELPER: IMAGE DIMENSIONS ---
 function getImageDimensions(file) {
     return new Promise((resolve) => {
         const img = new Image();
@@ -94,6 +94,16 @@ function getImageDimensions(file) {
     });
 }
 
+function toDataURL(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = e => resolve(e.target.result);
+        reader.onerror = err => reject(err);
+        reader.readAsDataURL(file);
+    });
+}
+
+// --- MAIN GENERATION ---
 generatePDFBtn.addEventListener('click', async () => {
     if (!photosList.length) {
         alert("Please upload at least one photo.");
@@ -105,76 +115,103 @@ generatePDFBtn.addEventListener('click', async () => {
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const isMobile = window.innerWidth <= 768;
-    const margin = isMobile ? 30 : 40;
 
-    // --- COVER PAGE (Simplified for logic maintenance) ---
-    doc.setFillColor(255, 240, 245);
+    // Decoration Helper: Hearts
+    const drawHeart = (x, y, size, opacity = 1) => {
+        doc.setGState(new doc.GState({ opacity: opacity }));
+        doc.setFillColor(220, 20, 60);
+        doc.circle(x, y, size, 'F');
+        doc.circle(x + size, y, size, 'F');
+        doc.triangle(x - size, y + size/2, x + size*2, y + size/2, x + size/2, y + size*2.5, 'F');
+        doc.setGState(new doc.GState({ opacity: 1 }));
+    };
+
+    // --- PAGE 1: SUPER ROMANTIC COVER ---
+    doc.setFillColor(255, 240, 245); // Soft blush background
     doc.rect(0, 0, pageWidth, pageHeight, 'F');
-    doc.setFillColor(220, 20, 60);
-    doc.rect(0, 0, pageWidth, 120, 'F');
     
-    const title = document.getElementById('albumTitle')?.value || 'Our Memory Book';
-    const titleImg = await renderTextWithEmojis(title, 32, pageWidth - 80);
-    doc.addImage(titleImg, 'PNG', 40, 160, pageWidth - 80, 60);
+    // Decorative border
+    doc.setDrawColor(220, 20, 60);
+    doc.setLineWidth(1.5);
+    doc.rect(40, 40, pageWidth - 80, pageHeight - 80, 'S');
+
+    // Title
+    const albumTitle = document.getElementById('albumTitle')?.value || 'Our Journey';
+    const titleImg = await renderTextWithEmojis(albumTitle, 40, pageWidth - 140, '#dc143c');
+    doc.addImage(titleImg, 'PNG', 70, 160, pageWidth - 140, 100);
+
+    // Subtitle
+    doc.setFontSize(14);
+    doc.setTextColor(220, 20, 60);
+    doc.text("Every moment is a treasure with you.", pageWidth/2, 280, { align: 'center' });
+
+    // Names
+    const yourName = document.getElementById('name')?.value || 'Me';
+    const partnerName = document.getElementById('partnerName')?.value || 'You';
+    const namesImg = await renderTextWithEmojis(`${yourName} ❤️ ${partnerName}`, 22, pageWidth - 100);
+    doc.addImage(namesImg, 'PNG', 50, 360, pageWidth - 100, 60);
+
+    drawHeart(pageWidth/2 - 5, pageHeight - 150, 10, 0.8);
 
     // --- PHOTO PAGES ---
     for (let i = 0; i < photosList.length; i++) {
         doc.addPage();
         doc.setFillColor(255, 252, 252);
         doc.rect(0, 0, pageWidth, pageHeight, 'F');
+        
+        // Scattered background hearts
+        drawHeart(50, 50, 4, 0.1);
+        drawHeart(pageWidth-70, 120, 6, 0.1);
+        drawHeart(60, pageHeight-100, 5, 0.1);
 
         const imgData = await toDataURL(photosList[i]);
         const dims = await getImageDimensions(photosList[i]);
-        
-        // LOGIC FIX: Dynamic Aspect Ratio
         const aspectRatio = dims.width / dims.height;
-        const frameWidth = pageWidth - (margin * 2);
-        const availableHeight = pageHeight - (isMobile ? 250 : 300); // Leave room for caption
+        
+        const photoMargin = 60;
+        const frameWidth = pageWidth - (photoMargin * 2);
+        const availableHeight = pageHeight - 280;
         
         let drawWidth = frameWidth;
         let drawHeight = frameWidth / aspectRatio;
 
-        // Ensure photo doesn't overflow vertically
+        // FIXED LOGIC: Preserve aspect ratio and fit to page
         if (drawHeight > availableHeight) {
             drawHeight = availableHeight;
             drawWidth = drawHeight * aspectRatio;
         }
 
         const xPos = (pageWidth - drawWidth) / 2;
-        const yPos = 60;
+        const yPos = 80;
 
-        // White Photo Frame/Border
+        // Shadow & Frame
+        doc.setFillColor(245, 245, 245);
+        doc.roundedRect(xPos + 5, yPos + 5, drawWidth, drawHeight, 5, 5, 'F');
         doc.setFillColor(255, 255, 255);
-        doc.roundedRect(xPos - 10, yPos - 10, drawWidth + 20, drawHeight + 20, 5, 5, 'F');
-        doc.setDrawColor(220, 20, 60);
-        doc.setLineWidth(1.5);
-        doc.roundedRect(xPos - 10, yPos - 10, drawWidth + 20, drawHeight + 20, 5, 5, 'S');
-
-        // Add Image (No more stretching!)
+        doc.roundedRect(xPos - 10, yPos - 10, drawWidth + 20, drawHeight + 60, 2, 2, 'F');
+        
         doc.addImage(imgData, 'JPEG', xPos, yPos, drawWidth, drawHeight);
 
-        // Caption Logic
-        const caption = captionsList[i] || '';
-        if (caption) {
-            const captionBoxY = yPos + drawHeight + 30;
-            const captionImg = await renderTextWithEmojis(caption, 16, frameWidth - 40);
-            doc.addImage(captionImg, 'PNG', margin, captionBoxY, frameWidth, 80);
-        }
+        // Caption
+        const caption = captionsList[i] || 'Forever & Always... ❤️';
+        const captionImg = await renderTextWithEmojis(caption, 17, frameWidth - 10);
+        doc.addImage(captionImg, 'PNG', photoMargin + 5, yPos + drawHeight + 10, frameWidth - 10, 50);
 
-        // Page Number
-        doc.setFontSize(10);
-        doc.setTextColor(150, 150, 150);
-        doc.text(`${i + 1}`, pageWidth / 2, pageHeight - 30, { align: 'center' });
+        // Page numbering
+        doc.setFontSize(9);
+        doc.setTextColor(200, 200, 200);
+        doc.text(`${i + 1}`, pageWidth / 2, pageHeight - 40, { align: 'center' });
     }
 
-    doc.save('Our_Memory_Book.pdf');
-});
+    // --- FINAL PAGE: THE CLOSURE ---
+    doc.addPage();
+    doc.setFillColor(220, 20, 60); // Crimson
+    doc.rect(0, 0, pageWidth, pageHeight, 'F');
+    
+    // We render white text for the final page
+    const finalImg = await renderTextWithEmojis("To be continued...", 30, pageWidth - 120, '#ffffff');
+    doc.addImage(finalImg, 'PNG', 60, pageHeight/2 - 40, pageWidth - 120, 80);
+    drawHeart(pageWidth/2 - 10, pageHeight/2 + 60, 15, 1);
 
-function toDataURL(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = e => resolve(e.target.result);
-        reader.onerror = err => reject(err);
-        reader.readAsDataURL(file);
-    });
-}
+    doc.save(`${partnerName}_Our_Memories.pdf`);
+});
