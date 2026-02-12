@@ -199,69 +199,76 @@ generatePDFBtn.addEventListener('click', async () => {
         doc.rect(0, 0, pageWidth, 5, 'F');
         
         // Calculate responsive photo dimensions
-        const photoMargin = isMobile ? 20 : 35;
+        const photoMargin = isMobile ? 22 : 40;
         const frameWidth = pageWidth - (photoMargin * 2);
-        const frameHeight = frameWidth * 0.75; // 4:3 aspect ratio
-        const frameX = photoMargin;
-        const frameY = isMobile ? 50 : 65;
+        const topSpace = isMobile ? 45 : 60;
         
-        // Ensure photo fits on page with room for caption
-        const captionSpace = isMobile ? 130 : 150;
-        const maxPhotoHeight = pageHeight - frameY - captionSpace;
-        const finalFrameHeight = Math.min(frameHeight, maxPhotoHeight);
-        const finalFrameWidth = frameWidth;
+        // Reserve space for caption at bottom
+        const captionBoxHeight = isMobile ? 90 : 100;
+        const bottomSpace = isMobile ? 60 : 70;
+        const availableHeight = pageHeight - topSpace - captionBoxHeight - bottomSpace;
+        
+        // Calculate frame height (maintain aspect ratio but fit in available space)
+        let frameHeight = frameWidth * 0.75; // 4:3 aspect ratio
+        if (frameHeight > availableHeight) {
+            frameHeight = availableHeight;
+        }
+        
+        const frameX = photoMargin;
+        const frameY = topSpace;
         
         // Shadow
         doc.setFillColor(200, 200, 200);
-        doc.roundedRect(frameX + 2, frameY + 2, finalFrameWidth, finalFrameHeight, 3, 3, 'F');
+        doc.roundedRect(frameX + 2, frameY + 2, frameWidth, frameHeight, 3, 3, 'F');
         
         // White frame background
-        const framePadding = isMobile ? 6 : 10;
+        const framePadding = isMobile ? 7 : 10;
         doc.setFillColor(255, 255, 255);
         doc.roundedRect(frameX - framePadding, frameY - framePadding, 
-                       finalFrameWidth + framePadding * 2, finalFrameHeight + framePadding * 2, 5, 5, 'F');
+                       frameWidth + framePadding * 2, frameHeight + framePadding * 2, 5, 5, 'F');
         
         // Add photo
         const img = photosList[i];
         const imgData = await toDataURL(img);
-        doc.addImage(imgData, 'JPEG', frameX, frameY, finalFrameWidth, finalFrameHeight);
+        doc.addImage(imgData, 'JPEG', frameX, frameY, frameWidth, frameHeight);
         
         // Frame border
         doc.setDrawColor(220, 20, 60);
-        doc.setLineWidth(isMobile ? 1 : 1.5);
+        doc.setLineWidth(isMobile ? 1.2 : 1.8);
         doc.roundedRect(frameX - framePadding, frameY - framePadding, 
-                       finalFrameWidth + framePadding * 2, finalFrameHeight + framePadding * 2, 5, 5, 'S');
+                       frameWidth + framePadding * 2, frameHeight + framePadding * 2, 5, 5, 'S');
         
-        // Caption box
-        const captionY = frameY + finalFrameHeight + (isMobile ? 18 : 25);
-        const captionBoxWidth = pageWidth - (margin * 2);
-        const captionBoxHeight = isMobile ? 75 : 90;
-        const captionBoxX = margin;
+        // Caption box - positioned below photo with good spacing
+        const captionY = frameY + frameHeight + (isMobile ? 22 : 28);
+        const captionBoxWidth = pageWidth - (photoMargin * 2);
+        const captionBoxX = photoMargin;
         
         doc.setFillColor(255, 255, 255);
-        doc.roundedRect(captionBoxX, captionY, captionBoxWidth, captionBoxHeight, 6, 6, 'F');
+        doc.roundedRect(captionBoxX, captionY, captionBoxWidth, captionBoxHeight, 8, 8, 'F');
         doc.setDrawColor(255, 182, 193);
-        doc.setLineWidth(1);
-        doc.roundedRect(captionBoxX, captionY, captionBoxWidth, captionBoxHeight, 6, 6, 'S');
+        doc.setLineWidth(1.2);
+        doc.roundedRect(captionBoxX, captionY, captionBoxWidth, captionBoxHeight, 8, 8, 'S');
         
         // Caption text with emoji support
         const caption = captionsList[i] || '';
         if (caption) {
-            const captionMaxWidth = captionBoxWidth - (isMobile ? 20 : 30);
-            const captionImgHeight = captionBoxHeight - (isMobile ? 30 : 35);
+            const captionPadding = isMobile ? 12 : 15;
+            const captionMaxWidth = captionBoxWidth - (captionPadding * 2);
+            const captionImgHeight = captionBoxHeight - (captionPadding * 2);
             const captionImage = await renderTextWithEmojis(caption, captionFontSize, captionMaxWidth);
-            doc.addImage(captionImage, 'PNG', captionBoxX + (isMobile ? 10 : 15), 
-                        captionY + (isMobile ? 15 : 18), captionMaxWidth, captionImgHeight);
+            doc.addImage(captionImage, 'PNG', captionBoxX + captionPadding, 
+                        captionY + captionPadding, captionMaxWidth, captionImgHeight);
         }
         
-        // Page number
+        // Page number at very bottom
+        const pageNumY = pageHeight - (isMobile ? 12 : 15);
         doc.setFontSize(isMobile ? 8 : 9);
         doc.setTextColor(150, 150, 150);
-        doc.text(`${i + 1}`, pageWidth / 2, pageHeight - (isMobile ? 15 : 20), { align: 'center' });
+        doc.text(`${i + 1}`, pageWidth / 2, pageNumY, { align: 'center' });
         
-        // Small heart decoration
+        // Small heart decoration above page number
         doc.setFillColor(255, 182, 193);
-        doc.circle(pageWidth / 2, pageHeight - (isMobile ? 28 : 35), isMobile ? 2.5 : 3, 'F');
+        doc.circle(pageWidth / 2, pageNumY - (isMobile ? 10 : 12), isMobile ? 2.5 : 3, 'F');
     }
     
     doc.save('Valentine_Memory_Book.pdf');
