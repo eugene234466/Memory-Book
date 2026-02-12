@@ -1,11 +1,9 @@
-/* Reset & Box Sizing */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-/* Body */
 body {
     font-family: 'Poppins', sans-serif;
     background: linear-gradient(#ff9a8e, #fad0c4);
@@ -21,25 +19,19 @@ header {
     text-align: center;
     padding: 30px;
     margin-bottom: 20px;
-    background: rgba(255, 255, 255, 0.15);
-    -webkit-backdrop-filter: blur(10px);
+    background: rgba(255,255,255,0.15);
     backdrop-filter: blur(10px);
     border-radius: 20px;
-    max-width: 700px;
-    width: 100%;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    width: 700px;
+    max-width: 100%;
 }
 
 header h1 {
-    font-size: 40px;
-    font-weight: 700;
+    font-size: 38px;
     color: white;
-    text-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
-    margin-bottom: 10px;
 }
 
 header p {
-    font-size: 18px;
     color: #ffe5ec;
 }
 
@@ -47,35 +39,19 @@ header p {
 form {
     width: 700px;
     max-width: 100%;
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255,255,255,0.2);
     padding: 30px;
     border-radius: 20px;
     display: flex;
     flex-direction: column;
     gap: 15px;
     margin-bottom: 30px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
-form label {
-    font-size: 16px;
-    color: white;
-    margin-bottom: 5px;
-}
-
-form input[type="text"],
-form input[type="date"],
-form input[type="file"],
-form textarea {
+form input {
     padding: 12px;
     border-radius: 10px;
     border: none;
-    font-size: 16px;
-    width: 100%;
-}
-
-form textarea {
-    resize: vertical;
 }
 
 /* Buttons */
@@ -87,92 +63,55 @@ button {
     border-radius: 30px;
     border: none;
     cursor: pointer;
-    transition: 0.3s ease-in-out;
-    margin-top: 10px;
 }
 
-button:hover {
-    background-color: #e63956;
-    transform: scale(1.05);
-}
-
-/* Preview Section */
+/* PREVIEW AREA */
 .preview {
     width: 700px;
     max-width: 100%;
     padding: 20px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
-.preview h2 {
-    font-size: 28px;
-    font-weight: 600;
-    color: white;
-    margin-bottom: 15px;
-}
-
+/* Realistic photobook pages */
 #previewContainer {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-}
-
-/* Individual Photo Wrapper */
-.photo-wrapper {
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 40px;
 }
 
+/* album page */
+.album-page {
+    width: 100%;
+    background: white;
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+/* photo frame */
+.photo-frame {
+    background: #fafafa;
+    padding: 12px;
+    border-radius: 12px;
+}
+
+/* FIX image stretching */
 .preview-image {
-    max-width: 150px;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
     border-radius: 10px;
-    margin-bottom: 5px;
 }
 
+/* BIG caption area */
 .caption-input {
-    width: 150px;
-    padding: 6px 8px;
-    border-radius: 6px;
-    border: none;
-    font-size: 14px;
-    text-align: center;
-}
-
-/* Responsive */
-@media screen and (max-width: 768px) {
-    header {
-        width: 90%;
-        padding: 20px;
-    }
-
-    form {
-        width: 90%;
-        padding: 20px;
-    }
-
-    .preview {
-        width: 90%;
-        padding: 15px;
-    }
-
-    header h1 {
-        font-size: 32px;
-    }
-
-    header p {
-        font-size: 16px;
-    }
-
-    .preview h2 {
-        font-size: 24px;
-    }
-
-    .preview-image,
-    .caption-input {
-        max-width: 100px;
-        width: 100px;
-    }
+    width: 100%;
+    min-height: 120px;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid #ffd1dc;
+    margin-top: 15px;
+    font-size: 15px;
+    resize: vertical;
 }
