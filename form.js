@@ -129,62 +129,112 @@ generatePDFBtn.addEventListener('click', async () => {
     doc.setFillColor(255, 240, 245);
     doc.rect(0, 0, pageWidth, pageHeight, 'F');
     
-    // Decorative header bar
+    // Decorative header bar - larger and more prominent
+    const headerHeight = isMobile ? 120 : 140;
     doc.setFillColor(220, 20, 60);
-    doc.rect(0, 0, pageWidth, isMobile ? 80 : 100, 'F');
+    doc.rect(0, 0, pageWidth, headerHeight, 'F');
     
-    // Heart decorations on cover
+    // Heart decorations on cover - positioned in header
     doc.setFillColor(255, 105, 180);
-    const heartSize = isMobile ? 10 : 14;
-    const heartY = isMobile ? 40 : 50;
-    doc.circle(isMobile ? 50 : 70, heartY, heartSize, 'F');
-    doc.circle(pageWidth - (isMobile ? 50 : 70), heartY, heartSize, 'F');
+    const heartSize = isMobile ? 18 : 22;
+    const heartY = headerHeight / 2;
+    doc.circle(isMobile ? 60 : 80, heartY, heartSize, 'F');
+    doc.circle(pageWidth - (isMobile ? 60 : 80), heartY, heartSize, 'F');
     
-    // Title with emoji support
-    const titleWidth = pageWidth - (margin * 3);
-    const titleY = isMobile ? 160 : 200;
-    const titleImage = await renderTextWithEmojis(albumTitle, titleFontSize, titleWidth);
-    const titleImgWidth = Math.min(titleWidth, isMobile ? 340 : 420);
-    const titleImgHeight = isMobile ? 50 : 70;
-    doc.addImage(titleImage, 'PNG', pageWidth / 2 - titleImgWidth / 2, titleY, titleImgWidth, titleImgHeight);
+    // Add decorative small hearts
+    doc.setFillColor(255, 182, 193);
+    const smallHeartSize = isMobile ? 8 : 10;
+    doc.circle(pageWidth / 4, heartY - 20, smallHeartSize, 'F');
+    doc.circle((pageWidth / 4) * 3, heartY - 20, smallHeartSize, 'F');
+    doc.circle(pageWidth / 4, heartY + 20, smallHeartSize, 'F');
+    doc.circle((pageWidth / 4) * 3, heartY + 20, smallHeartSize, 'F');
     
-    // Decorative line
+    // Title section - larger and more prominent
+    const titleY = headerHeight + (isMobile ? 60 : 80);
+    const titleWidth = pageWidth - (margin * 2);
+    const titleImage = await renderTextWithEmojis(albumTitle, isMobile ? 28 : 36, titleWidth);
+    const titleImgWidth = titleWidth;
+    const titleImgHeight = isMobile ? 70 : 90;
+    doc.addImage(titleImage, 'PNG', margin, titleY, titleImgWidth, titleImgHeight);
+    
+    // Decorative line under title - thicker and more visible
     doc.setDrawColor(220, 20, 60);
-    doc.setLineWidth(2);
-    const lineWidth = isMobile ? 120 : 160;
-    const lineY = titleY + titleImgHeight + (isMobile ? 20 : 30);
+    doc.setLineWidth(3);
+    const lineWidth = isMobile ? 140 : 180;
+    const lineY = titleY + titleImgHeight + (isMobile ? 25 : 35);
     doc.line(pageWidth / 2 - lineWidth, lineY, pageWidth / 2 + lineWidth, lineY);
     
-    // From/To section with box
-    const boxWidth = Math.min(isMobile ? 300 : 360, pageWidth - margin * 2);
-    const boxHeight = isMobile ? 100 : 120;
+    // Decorative dots on line
+    doc.setFillColor(220, 20, 60);
+    doc.circle(pageWidth / 2 - lineWidth - 10, lineY, 4, 'F');
+    doc.circle(pageWidth / 2 + lineWidth + 10, lineY, 4, 'F');
+    
+    // From/To section with box - larger and more centered
+    const boxWidth = Math.min(isMobile ? 340 : 400, pageWidth - margin * 2);
+    const boxHeight = isMobile ? 130 : 150;
     const boxX = pageWidth / 2 - boxWidth / 2;
-    const boxY = lineY + (isMobile ? 30 : 40);
+    const boxY = lineY + (isMobile ? 45 : 60);
     
+    // Box shadow
+    doc.setFillColor(200, 200, 200);
+    doc.roundedRect(boxX + 3, boxY + 3, boxWidth, boxHeight, 10, 10, 'F');
+    
+    // White box background
     doc.setFillColor(255, 255, 255);
-    doc.roundedRect(boxX, boxY, boxWidth, boxHeight, 8, 8, 'F');
+    doc.roundedRect(boxX, boxY, boxWidth, boxHeight, 10, 10, 'F');
     doc.setDrawColor(220, 20, 60);
+    doc.setLineWidth(2);
+    doc.roundedRect(boxX, boxY, boxWidth, boxHeight, 10, 10, 'S');
+    
+    // Small decorative hearts on corners of box
+    doc.setFillColor(255, 105, 180);
+    const cornerHeartSize = isMobile ? 6 : 8;
+    doc.circle(boxX - 5, boxY - 5, cornerHeartSize, 'F');
+    doc.circle(boxX + boxWidth + 5, boxY - 5, cornerHeartSize, 'F');
+    doc.circle(boxX - 5, boxY + boxHeight + 5, cornerHeartSize, 'F');
+    doc.circle(boxX + boxWidth + 5, boxY + boxHeight + 5, cornerHeartSize, 'F');
+    
+    // Render names with emoji support - larger text
+    const nameWidth = boxWidth - 40;
+    const nameHeight = isMobile ? 38 : 45;
+    const fromImage = await renderTextWithEmojis(`From: ${yourName}`, isMobile ? 18 : 22, nameWidth);
+    const toImage = await renderTextWithEmojis(`To: ${partnerName}`, isMobile ? 18 : 22, nameWidth);
+    doc.addImage(fromImage, 'PNG', boxX + 20, boxY + (isMobile ? 25 : 30), nameWidth, nameHeight);
+    doc.addImage(toImage, 'PNG', boxX + 20, boxY + (isMobile ? 72 : 85), nameWidth, nameHeight);
+    
+    // Decorative divider between names
+    doc.setDrawColor(255, 182, 193);
     doc.setLineWidth(1);
-    doc.roundedRect(boxX, boxY, boxWidth, boxHeight, 8, 8, 'S');
+    const dividerMargin = isMobile ? 60 : 80;
+    doc.line(boxX + dividerMargin, boxY + boxHeight / 2, 
+             boxX + boxWidth - dividerMargin, boxY + boxHeight / 2);
     
-    // Render names with emoji support
-    const nameWidth = boxWidth - 30;
-    const nameHeight = isMobile ? 28 : 35;
-    const fromImage = await renderTextWithEmojis(`From: ${yourName}`, nameFontSize, nameWidth);
-    const toImage = await renderTextWithEmojis(`To: ${partnerName}`, nameFontSize, nameWidth);
-    doc.addImage(fromImage, 'PNG', boxX + 15, boxY + (isMobile ? 18 : 22), nameWidth, nameHeight);
-    doc.addImage(toImage, 'PNG', boxX + 15, boxY + (isMobile ? 56 : 68), nameWidth, nameHeight);
+    // Footer section with hearts and decorative elements
+    const footerY = pageHeight - (isMobile ? 80 : 100);
     
-    // Footer hearts
-    const footerY = pageHeight - (isMobile ? 40 : 50);
-    const footerHeartSize = isMobile ? 5 : 7;
-    const heartSpacing = isMobile ? 20 : 28;
+    // Decorative curved line above hearts
+    doc.setDrawColor(255, 182, 193);
+    doc.setLineWidth(1.5);
+    const curveMargin = isMobile ? 80 : 120;
+    doc.line(curveMargin, footerY - 25, pageWidth - curveMargin, footerY - 25);
+    
+    // Footer hearts - larger and more visible
+    const footerHeartSize = isMobile ? 10 : 12;
+    const heartSpacing = isMobile ? 30 : 40;
     doc.setFillColor(255, 182, 193);
     doc.circle(pageWidth / 2 - heartSpacing, footerY, footerHeartSize, 'F');
     doc.setFillColor(220, 20, 60);
-    doc.circle(pageWidth / 2, footerY, footerHeartSize, 'F');
+    doc.circle(pageWidth / 2, footerY, footerHeartSize * 1.3, 'F');
     doc.setFillColor(255, 182, 193);
     doc.circle(pageWidth / 2 + heartSpacing, footerY, footerHeartSize, 'F');
+    
+    // Small decorative hearts around main hearts
+    doc.setFillColor(255, 182, 193);
+    const tinyHeartSize = isMobile ? 4 : 5;
+    doc.circle(pageWidth / 2 - heartSpacing * 1.8, footerY, tinyHeartSize, 'F');
+    doc.circle(pageWidth / 2 + heartSpacing * 1.8, footerY, tinyHeartSize, 'F');
+    doc.circle(pageWidth / 2 - heartSpacing * 0.5, footerY - 18, tinyHeartSize, 'F');
+    doc.circle(pageWidth / 2 + heartSpacing * 0.5, footerY - 18, tinyHeartSize, 'F');
     
     // ===== PHOTO PAGES =====
     for (let i = 0; i < photosList.length; i++) {
