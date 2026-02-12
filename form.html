@@ -4,46 +4,48 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HeartFolio - Memory Form</title>
+
     <link rel="stylesheet" href="form.css">
     <link rel="icon" href="love.png">
+
+    <!-- jsPDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <!-- Add html2canvas for emoji rendering -->
+
+    <!-- emoji rendering -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
+
 <body>
 
-    <header>
-        <h1>Create Your Valentine Memory Book ❤️</h1>
-        <p>Upload your photos and add your lovely messages</p>
-    </header>
+<header>
+    <h1>Create Your Valentine Memory Book ❤️</h1>
+    <p>Upload your photos and add your lovely messages</p>
+</header>
 
-    <main>
-        <form id="memoryForm">
-            <label for="name">Your Name:</label>
-            <input type="text" id="name" name="name" required>
+<main>
+    <form id="memoryForm">
+        <label>Your Name:</label>
+        <input type="text" id="name" required>
 
-            <label for="partnerName">Partner's Name:</label>
-            <input type="text" id="partnerName" name="partnerName" required>
+        <label>Partner's Name:</label>
+        <input type="text" id="partnerName" required>
 
-            <label for="albumTitle">Album Title:</label>
-            <input type="text" id="albumTitle" name="albumTitle" required>
+        <label>Album Title:</label>
+        <input type="text" id="albumTitle" required>
 
-            <label for="photo">Upload Your Photos:</label>
-            <input type="file" id="photo" name="photos[]" accept="image/*" multiple required>
+        <label>Upload Photos:</label>
+        <input type="file" id="photo" accept="image/*" multiple required>
 
-            <button type="button" id="previewBtn">Preview Album</button>
-        </form>
-    </main>
+        <button type="button" id="previewBtn">Preview Album</button>
+    </form>
+</main>
 
-    <section class="preview">
-        <h2>Preview Your Memory Book</h2>
-        <div id="previewContainer"></div>
-        <button id="generatePDF">Generate PDF</button>
-    </section>
-    
-    <!-- Hidden canvas for emoji rendering -->
-    <div id="emojiCanvas" style="position: absolute; left: -9999px; top: -9999px;"></div>
-    
-    <script src="form.js"></script>
+<section class="preview">
+    <h2>Preview Your Memory Book</h2>
+    <div id="previewContainer"></div>
+    <button id="generatePDF">Generate PDF</button>
+</section>
+
+<script src="form.js"></script>
 </body>
 </html>
