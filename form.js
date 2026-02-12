@@ -107,53 +107,74 @@ generatePDFBtn.addEventListener('click', async () => {
     const yourName = document.getElementById('name').value;
     const partnerName = document.getElementById('partnerName').value;
     
-    // Cover Page with decorative elements
-    // Background gradient effect with rectangles
+    // Detect if mobile for responsive sizing
+    const isMobile = window.innerWidth <= 768;
+    
+    // Responsive scaling factors
+    const scale = isMobile ? 0.85 : 1;
+    const margin = isMobile ? 25 : 40;
+    const titleFontSize = isMobile ? 24 : 32;
+    const nameFontSize = isMobile ? 16 : 20;
+    const captionFontSize = isMobile ? 13 : 16;
+    
+    // ===== COVER PAGE =====
+    // Background
     doc.setFillColor(255, 240, 245);
     doc.rect(0, 0, pageWidth, pageHeight, 'F');
     
     // Decorative header bar
     doc.setFillColor(220, 20, 60);
-    doc.rect(0, 0, pageWidth, 120, 'F');
+    doc.rect(0, 0, pageWidth, 100 * scale, 'F');
     
     // Heart decorations on cover
     doc.setFillColor(255, 105, 180);
-    doc.circle(80, 60, 15, 'F');
-    doc.circle(pageWidth - 80, 60, 15, 'F');
+    const heartSize = 12 * scale;
+    doc.circle(60 * scale, 50 * scale, heartSize, 'F');
+    doc.circle(pageWidth - 60 * scale, 50 * scale, heartSize, 'F');
     
-    // Title with shadow effect (with emoji support)
-    const titleImage = await renderTextWithEmojis(albumTitle, 32, pageWidth - 100);
-    doc.addImage(titleImage, 'PNG', pageWidth / 2 - 200, 220, 400, 60);
+    // Title with emoji support
+    const titleWidth = pageWidth - (margin * 4);
+    const titleImage = await renderTextWithEmojis(albumTitle, titleFontSize, titleWidth);
+    const titleImgWidth = Math.min(titleWidth, 400 * scale);
+    const titleImgHeight = 60 * scale;
+    doc.addImage(titleImage, 'PNG', pageWidth / 2 - titleImgWidth / 2, 180 * scale, titleImgWidth, titleImgHeight);
     
     // Decorative line
     doc.setDrawColor(220, 20, 60);
     doc.setLineWidth(2);
-    doc.line(pageWidth / 2 - 150, 300, pageWidth / 2 + 150, 300);
+    const lineWidth = 150 * scale;
+    doc.line(pageWidth / 2 - lineWidth, 260 * scale, pageWidth / 2 + lineWidth, 260 * scale);
     
     // From/To section with box
+    const boxWidth = Math.min(360 * scale, pageWidth - margin * 2);
+    const boxHeight = 110 * scale;
+    const boxX = pageWidth / 2 - boxWidth / 2;
+    const boxY = 300 * scale;
+    
     doc.setFillColor(255, 255, 255);
-    doc.roundedRect(pageWidth / 2 - 180, 330, 360, 120, 10, 10, 'F');
+    doc.roundedRect(boxX, boxY, boxWidth, boxHeight, 8, 8, 'F');
     doc.setDrawColor(220, 20, 60);
     doc.setLineWidth(1);
-    doc.roundedRect(pageWidth / 2 - 180, 330, 360, 120, 10, 10, 'S');
+    doc.roundedRect(boxX, boxY, boxWidth, boxHeight, 8, 8, 'S');
     
     // Render names with emoji support
-    const fromImage = await renderTextWithEmojis(`From: ${yourName}`, 20, 320);
-    const toImage = await renderTextWithEmojis(`To: ${partnerName}`, 20, 320);
-    doc.addImage(fromImage, 'PNG', pageWidth / 2 - 160, 350, 320, 35);
-    doc.addImage(toImage, 'PNG', pageWidth / 2 - 160, 395, 320, 35);
+    const nameWidth = boxWidth - 40;
+    const fromImage = await renderTextWithEmojis(`From: ${yourName}`, nameFontSize, nameWidth);
+    const toImage = await renderTextWithEmojis(`To: ${partnerName}`, nameFontSize, nameWidth);
+    doc.addImage(fromImage, 'PNG', boxX + 20, boxY + 20, nameWidth, 30 * scale);
+    doc.addImage(toImage, 'PNG', boxX + 20, boxY + 60, nameWidth, 30 * scale);
     
     // Footer hearts
+    const footerY = pageHeight - 50 * scale;
     doc.setFillColor(255, 182, 193);
-    doc.circle(pageWidth / 2 - 30, pageHeight - 50, 8, 'F');
+    doc.circle(pageWidth / 2 - 25 * scale, footerY, 6 * scale, 'F');
     doc.setFillColor(220, 20, 60);
-    doc.circle(pageWidth / 2, pageHeight - 50, 8, 'F');
+    doc.circle(pageWidth / 2, footerY, 6 * scale, 'F');
     doc.setFillColor(255, 182, 193);
-    doc.circle(pageWidth / 2 + 30, pageHeight - 50, 8, 'F');
+    doc.circle(pageWidth / 2 + 25 * scale, footerY, 6 * scale, 'F');
     
-    // Photo pages with enhanced layout
+    // ===== PHOTO PAGES =====
     for (let i = 0; i < photosList.length; i++) {
-        // Always add a new page for photos (cover page is page 1)
         doc.addPage();
         
         // Page background
@@ -162,54 +183,69 @@ generatePDFBtn.addEventListener('click', async () => {
         
         // Decorative top border
         doc.setFillColor(220, 20, 60);
-        doc.rect(0, 0, pageWidth, 8, 'F');
+        doc.rect(0, 0, pageWidth, 6, 'F');
         
-        // Photo frame with shadow
-        const imgX = 56;
-        const imgY = 80;
-        const imgWidth = 480;
-        const imgHeight = 360;
+        // Calculate responsive photo dimensions
+        const photoMargin = margin * 1.5;
+        const frameWidth = pageWidth - (photoMargin * 2);
+        const frameHeight = frameWidth * 0.75; // 4:3 aspect ratio
+        const frameX = photoMargin;
+        const frameY = 70 * scale;
+        
+        // Ensure photo fits on page with room for caption
+        const maxPhotoHeight = pageHeight - frameY - 150 * scale;
+        const finalFrameHeight = Math.min(frameHeight, maxPhotoHeight);
+        const finalFrameWidth = frameWidth;
         
         // Shadow
         doc.setFillColor(200, 200, 200);
-        doc.roundedRect(imgX + 4, imgY + 4, imgWidth, imgHeight, 5, 5, 'F');
+        doc.roundedRect(frameX + 3, frameY + 3, finalFrameWidth, finalFrameHeight, 4, 4, 'F');
         
-        // White frame
+        // White frame background
+        const framePadding = 8;
         doc.setFillColor(255, 255, 255);
-        doc.roundedRect(imgX - 8, imgY - 8, imgWidth + 16, imgHeight + 16, 5, 5, 'F');
+        doc.roundedRect(frameX - framePadding, frameY - framePadding, 
+                       finalFrameWidth + framePadding * 2, finalFrameHeight + framePadding * 2, 4, 4, 'F');
         
+        // Add photo
         const img = photosList[i];
         const imgData = await toDataURL(img);
-        doc.addImage(imgData, 'JPEG', imgX, imgY, imgWidth, imgHeight);
+        doc.addImage(imgData, 'JPEG', frameX, frameY, finalFrameWidth, finalFrameHeight);
         
         // Frame border
         doc.setDrawColor(220, 20, 60);
-        doc.setLineWidth(2);
-        doc.roundedRect(imgX - 8, imgY - 8, imgWidth + 16, imgHeight + 16, 5, 5, 'S');
+        doc.setLineWidth(1.5);
+        doc.roundedRect(frameX - framePadding, frameY - framePadding, 
+                       finalFrameWidth + framePadding * 2, finalFrameHeight + framePadding * 2, 4, 4, 'S');
         
         // Caption box
-        const captionY = imgY + imgHeight + 40;
+        const captionY = frameY + finalFrameHeight + 25;
+        const captionBoxWidth = pageWidth - (margin * 2);
+        const captionBoxHeight = 90 * scale;
+        const captionBoxX = margin;
+        
         doc.setFillColor(255, 255, 255);
-        doc.roundedRect(40, captionY, pageWidth - 80, 80, 8, 8, 'F');
+        doc.roundedRect(captionBoxX, captionY, captionBoxWidth, captionBoxHeight, 6, 6, 'F');
         doc.setDrawColor(255, 182, 193);
         doc.setLineWidth(1);
-        doc.roundedRect(40, captionY, pageWidth - 80, 80, 8, 8, 'S');
+        doc.roundedRect(captionBoxX, captionY, captionBoxWidth, captionBoxHeight, 6, 6, 'S');
         
         // Caption text with emoji support
         const caption = captionsList[i] || '';
         if (caption) {
-            const captionImage = await renderTextWithEmojis(caption, 16, pageWidth - 120);
-            doc.addImage(captionImage, 'PNG', 60, captionY + 15, pageWidth - 120, 50);
+            const captionMaxWidth = captionBoxWidth - 30;
+            const captionImage = await renderTextWithEmojis(caption, captionFontSize, captionMaxWidth);
+            doc.addImage(captionImage, 'PNG', captionBoxX + 15, captionY + 20, captionMaxWidth, captionBoxHeight - 40);
         }
         
         // Page number
-        doc.setFontSize(10);
+        doc.setFontSize(9);
         doc.setTextColor(150, 150, 150);
-        doc.text(`${i + 1}`, pageWidth / 2, pageHeight - 30, { align: 'center' });
+        doc.text(`${i + 1}`, pageWidth / 2, pageHeight - 20, { align: 'center' });
         
         // Small heart decoration
         doc.setFillColor(255, 182, 193);
-        doc.circle(pageWidth / 2, pageHeight - 45, 4, 'F');
+        doc.circle(pageWidth / 2, pageHeight - 35, 3, 'F');
     }
     
     doc.save('Valentine_Memory_Book.pdf');
